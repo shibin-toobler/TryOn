@@ -1,0 +1,68 @@
+[
+  {
+    "sku": "SELENE-001",
+    "name": "Silk Column Dress",
+    "color": "Midnight",
+    "price": 2890,
+    "currency": "INR",
+    "image": "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=85",
+    "description": "Fluid silk with a softly sculpted waist and a clean modern finish.",
+    "category": "dress",
+    "promptHint": "Floor-length column silhouette with a fluid silk sheen."
+  },
+  {
+    "sku": "SELENE-002",
+    "name": "Satin Slip Dress",
+    "color": "Champagne",
+    "price": 2490,
+    "currency": "INR",
+    "image": "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85",
+    "description": "Liquid satin, delicate straps and an effortless evening drape.",
+    "category": "dress",
+    "promptHint": "Thin spaghetti straps and a bias-cut satin drape."
+  },
+  {
+    "sku": "SELENE-003",
+    "name": "Tailored Midi",
+    "color": "Berry",
+    "price": 3190,
+    "currency": "INR",
+    "image": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=85",
+    "description": "A precise midi cut with elegant structure and a confident line.",
+    "category": "dress",
+    "promptHint": "Structured midi length ending mid-calf."
+  },
+  {
+    "sku": "SELENE-004",
+    "name": "Linen Wrap Dress",
+    "color": "Olive",
+    "price": 2190,
+    "currency": "INR",
+    "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=85",
+    "description": "Relaxed linen with a wrap waist and natural movement.",
+    "category": "dress",
+    "promptHint": "Wrap front tied at the waist, matte linen texture."
+  },
+  {
+    "sku": "SELENE-005",
+    "name": "Asymmetric Pleat Dress",
+    "color": "Ink",
+    "price": 3490,
+    "currency": "INR",
+    "image": "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?auto=format&fit=crop&w=900&q=85",
+    "description": "Architectural pleats and an asymmetric hem for a sharper statement.",
+    "category": "dress",
+    "promptHint": "Sharp accordion pleats with an asymmetric hemline."
+  },
+  {
+    "sku": "SELENE-006",
+    "name": "Soft Knit Maxi",
+    "color": "Sand",
+    "price": 2790,
+    "currency": "INR",
+    "image": "https://images.unsplash.com/photo-1612336307429-8a898d10e223?auto=format&fit=crop&w=900&q=85",
+    "description": "Soft-touch knit with a minimal shape and effortless movement.",
+    "category": "dress",
+    "promptHint": "Ribbed knit texture, full maxi length."
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "name": "@tryon/widget",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Embeddable virtual try-on plugin. One script tag, any website.",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node test/smoke.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,17 @@
+node_modules/
+.next/
+dist/
+build/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+# Locally stored photos and renders. Keep the folder, ignore its contents.
+services/api/storage/*
+!services/api/storage/.gitkeep
+
+npm-debug.log*
+.DS_Store
+.qodo/
