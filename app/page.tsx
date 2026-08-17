@@ -24,33 +24,28 @@ export default function Home(){
  const [uploading,setUploading]=useState(false);
  const [category,setCategory]=useState('All');
  const visible=useMemo(()=>category==='All'?products:products.filter(p=>p.color===category),[category]);
- const looks:Look[] = [
-   ...(photo?[{id:'me',label:'My photo',image:photo}]:[]),
-   ...tried.map(p=>({id:String(p.id),label:p.name,image:p.image,product:p}))
- ];
+ const looks:Look[] = [...(photo?[{id:'me',label:'My photo',image:photo}]:[]),...tried.map(p=>({id:String(p.id),label:p.name,image:p.image,product:p}))];
  const choose=(p:Product)=>{setSelected(p);setTried(v=>[p,...v.filter(x=>x.id!==p.id)].slice(0,5));setShowStudio(true)};
- const selectLook=(look:Look)=>{ if(look.product){ choose(look.product); } else { setSelected(null); } };
+ const selectLook=(look:Look)=>look.product?choose(look.product):setSelected(null);
  const upload=(e:ChangeEvent<HTMLInputElement>)=>{const file=e.target.files?.[0];if(!file)return;setUploading(true);const reader=new FileReader();reader.onload=()=>{setPhoto(String(reader.result));setSelected(null);setUploading(false);};reader.readAsDataURL(file)};
  return <main className={showStudio?'with-studio':''}>
   <header className="topbar"><div className="brand"><span className="brand-mark">S</span>SELENE</div><nav><button>New In</button><button onClick={()=>setCategory('All')}>Dresses</button><button>Collections</button><button>Journal</button></nav><div className="actions"><button className="icon"><Search size={18}/></button><button className="icon"><Heart size={18}/></button><button className="icon"><ShoppingBag size={18}/><i>2</i></button></div></header>
   <section className="hero"><div className="hero-copy"><p className="eyebrow"><Sparkles size={13}/> VIRTUAL TRY-ON STUDIO</p><h1>See it.<br/><em>Wear it.</em><br/>Make it yours.</h1><p className="hero-text">Browse freely. When something catches your eye, try it on without leaving the shopping page.</p><button className="primary" onClick={()=>setShowStudio(true)}>Open try-on <ArrowRight size={16}/></button></div><div className="hero-image"><img src={products[2].image} alt="Fashion editorial"/><span>NEW SEASON<br/><b>FW / 26</b></span></div></section>
   <section className="catalog"><div className="section-head"><div><p className="eyebrow">THE EDIT</p><h2>Made for your next chapter.</h2></div><small>{visible.length.toString().padStart(2,'0')} pieces</small></div><div className="filters"><button className={category==='All'?'active':''} onClick={()=>setCategory('All')}>All</button><button className={category==='Midnight'?'active':''} onClick={()=>setCategory('Midnight')}>Midnight</button><button className={category==='Champagne'?'active':''} onClick={()=>setCategory('Champagne')}>Champagne</button><button className={category==='Berry'?'active':''} onClick={()=>setCategory('Berry')}>Berry</button></div><div className="grid">{visible.map(p=><article className="card" key={p.id}><div className="card-image"><img src={p.image} alt={p.name}/><button className="heart"><Heart size={17}/></button><button className="try" onClick={()=>choose(p)}><Sparkles size={14}/> Try on</button></div><div className="meta"><div><strong>{p.name}</strong><span>{p.color} · Dresses</span></div><b>₹{p.price.toLocaleString('en-IN')}</b></div><button className="details" onClick={()=>setDetail(p)}>View details <ArrowRight size={13}/></button></article>)}</div></section>
   {detail&&<Detail p={detail} close={()=>setDetail(null)} tryIt={()=>{setDetail(null);choose(detail)}}/>}
-  {showStudio&&<TryOnPanel p={selected} photo={photo} looks={looks} uploading={uploading} choose={choose} selectLook={selectLook} upload={upload} close={()=>setShowStudio(false)} />}
+  {showStudio&&<TryOnPanel p={selected} photo={photo} looks={looks} uploading={uploading} selectLook={selectLook} upload={upload} close={()=>setShowStudio(false)} />}
  </main>
 }
 
-function TryOnPanel({p,photo,looks,uploading,choose,selectLook,upload,close}:{p:Product|null;photo:string|null;looks:Look[];uploading:boolean;choose:(p:Product)=>void;selectLook:(look:Look)=>void;upload:(e:ChangeEvent<HTMLInputElement>)=>void;close:()=>void}){
- const previewImage = p?.image ?? photo;
- const hasPreview = Boolean(previewImage);
- return <aside className="floating-studio">
-   <div className="panel-top"><div><p className="eyebrow"><Sparkles size={12}/> TRY-ON</p><h3>{p?(photo?'Your look':'Selected look'):'See it on you.'}</h3></div><button className="panel-close" onClick={close}><X size={17}/></button></div>
-   <div className="panel-stage">
-    {hasPreview ? <div className="model-preview"><img src={previewImage!} alt={p?`Selected ${p.name}`:'Your uploaded model'}/>{p&&<div className="preview-shade"/>}{p&&<div className="look-chip"><Sparkles size={13}/><span><b>{p.name}</b><small>{photo?'UI try-on preview':'Selected look · upload photo to try on'}</small></span></div>}</div> : <div className="empty-model"><div className="upload-orb"><ImagePlus size={25}/></div><h4>Start with your photo</h4><p>Upload once, then keep browsing. Your photo stays here while you try different looks.</p><label className="upload-btn"><Upload size={15}/>{uploading?'Reading photo…':'Upload photo'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={upload} /></label><span className="helper">Full-body photo works best · JPG, PNG or WebP</span></div>}
-   </div>
-   {photo&&<div className="panel-info"><span><b>{p?p.name:'My photo'}</b>{p&&<> · {p.color}</>}</span><button>Change photo</button></div>}
-   <div className="look-strip-wrap"><div className="look-strip-head"><span>{photo?'Your looks':'Recently tried'}</span><span>{looks.length?`${looks.length} saved`:''}</span></div><div className="look-strip">{looks.length?looks.map(l=><button type="button" key={l.id} aria-label={`Show ${l.label}`} className={`look-thumb ${l.product?.id===p?.id || (!l.product&&!p)?'active':''}`} onClick={()=>selectLook(l)}><img src={l.image} alt={l.label}/><span>{l.label}</span></button>):<div className="strip-empty">Try a product to pin it here</div>}</div></div>
-   <div className="panel-footer">{p&&photo?<><button className="secondary">See in motion <Sparkles size={14}/></button><button className="primary small">View product <ArrowRight size={14}/></button></>:p?<span>Upload your photo to see <b>{p.name}</b> on you.</span>:<span>Choose <b>Try on</b> on any product card to preview it here.</span>}</div>
+function TryOnPanel({p,photo,looks,uploading,selectLook,upload,close}:{p:Product|null;photo:string|null;looks:Look[];uploading:boolean;selectLook:(look:Look)=>void;upload:(e:ChangeEvent<HTMLInputElement>)=>void;close:()=>void}){
+ const previewImage=p?.image??photo; const hasPreview=Boolean(previewImage);
+ return <aside className="floating-studio v3-studio">
+  <div className="panel-top"><div><p className="eyebrow"><Sparkles size={12}/> TRY-ON</p><h3>{p?(photo?'Your look':'Selected look'):'See it on you.'}</h3></div><button className="panel-close" onClick={close}><X size={17}/></button></div>
+  <div className="panel-stage v3-stage">
+   {hasPreview?<div className="model-preview"><img src={previewImage!} alt={p?`Selected ${p.name}`:'Your uploaded model'}/><div className="preview-shade v3-shade"/>{p&&<div className="look-chip v3-chip"><Sparkles size={13}/><span><b>{p.name}</b><small>{photo?'UI try-on preview':'Selected look · upload photo to try on'}</small></span></div>}{looks.length>0&&<div className="preview-look-dock">{looks.map(l=><button type="button" key={l.id} aria-label={`Show ${l.label}`} className={`preview-thumb ${l.product?.id===p?.id||(!l.product&&!p)?'active':''}`} onClick={()=>selectLook(l)}><img src={l.image} alt={l.label}/></button>)}</div>}</div>:<div className="empty-model"><div className="upload-orb"><ImagePlus size={25}/></div><h4>Start with your photo</h4><p>Upload once, then keep browsing. Your photo stays here while you try different looks.</p><label className="upload-btn"><Upload size={15}/>{uploading?'Reading photo…':'Upload photo'}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={upload}/></label><span className="helper">Full-body photo works best · JPG, PNG or WebP</span></div>}
+  </div>
+  {photo&&<div className="panel-info v3-info"><span><b>{p?p.name:'My photo'}</b>{p&&<> · {p.color}</>}</span><label className="change-photo">Change photo<input type="file" accept="image/jpeg,image/png,image/webp" onChange={upload}/></label></div>}
+  <div className="panel-footer v3-footer">{p&&photo?<><button className="secondary">See in motion <Sparkles size={14}/></button><button className="primary small">View product <ArrowRight size={14}/></button></>:p?<span>Upload your photo to see <b>{p.name}</b> on you.</span>:<span>Choose <b>Try on</b> on any product card to preview it here.</span>}</div>
  </aside>
 }
 
