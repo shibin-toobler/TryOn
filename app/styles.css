@@ -14,3 +14,6 @@ button,.primary,.ghost,.interest,.view-all,.try-on,.heart,.close,.motion,.add-ba
 
 /* Product image navigation with Try On overlay */
 .product-image-link{display:block;width:100%;height:100%;border:0;padding:0;background:transparent;cursor:pointer}.product-image-link img{width:100%;height:100%;object-fit:cover}.product-open .image-try-on{z-index:3;border:0;cursor:pointer}.product-open:hover .image-try-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+/* Shared header consistency across all routes */
+.topbar{width:100%;box-sizing:border-box}.topbar .brand{text-decoration:none;color:var(--ink);display:flex;align-items:center}.topbar .search{flex:1;max-width:560px;margin:0 auto}.topbar .actions{margin-left:auto;display:flex;align-items:center;gap:10px}.topbar .menu{flex:0 0 auto}@media(min-width:761px){.topbar{padding-left:5vw!important;padding-right:5vw!important;height:76px!important}.topbar .search{height:42px}.topbar .actions{min-width:max-content}}
