@@ -8,3 +8,6 @@ button,.primary,.ghost,.interest,.view-all,.try-on,.heart,.close,.motion,.add-ba
 
 /* Fix product card action containment */
 .product{min-width:0;overflow:hidden}.product-actions{display:block;width:100%;max-width:100%;box-sizing:border-box}.product-actions .try-on{position:static;inset:auto;float:none;width:100%;max-width:100%;box-sizing:border-box;min-height:42px;padding:0 14px;border-radius:4px;white-space:nowrap}.product-actions .try-on svg{flex:0 0 auto}.product-grid .product-actions{grid-column:auto}
+
+/* Try On overlay on listing product image */
+.image-try-on{position:absolute;left:50%;bottom:18px;transform:translate(-50%,10px);opacity:0;pointer-events:none;min-width:118px;height:40px;padding:0 16px;display:flex;align-items:center;justify-content:center;gap:7px;border-radius:4px;background:rgba(28,30,34,.94);color:#fff;text-decoration:none;font-size:10px;font-weight:600;letter-spacing:.03em;box-shadow:0 8px 22px rgba(0,0,0,.18);transition:opacity .22s ease,transform .22s ease,background .22s ease}.product-open:hover .image-try-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}.image-try-on:hover{background:#3b414b;transform:translate(-50%,-2px)}@media(max-width:760px){.image-try-on{opacity:1;transform:translate(-50%,0);pointer-events:auto}}
