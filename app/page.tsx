@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Bell, Camera, ChevronRight, Heart, ImagePlus, Menu, Search, ShoppingBag, Sparkles, User, X, ArrowUpRight, SlidersHorizontal } from 'lucide-react';
 
 type Product={id:number;name:string;category:string;price:number;image:string;reason:string;tag?:string};
@@ -24,6 +24,7 @@ export default function Home(){
  const toggleLike=(id:number)=>setLiked(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
  const requestUpload=()=>loggedIn?setUpload(true):setLogin(true);
  const openHeroTryOn=()=>{const product=products.find(p=>p.category.includes('Fashion'))||products[0];setTryProduct(product);setTryHistory(h=>[product,...h.filter(x=>x.id!==product.id)].slice(0,6));};
+ useEffect(()=>{if(selectedProduct)window.scrollTo({top:0,behavior:'smooth'});},[selectedProduct]);
  const openTryOn=(product:Product)=>{setTryProduct(product);setTryHistory(h=>[product,...h.filter(x=>x.id!==product.id)].slice(0,6));};
  const visible=products.filter(p=>`${p.name} ${p.category}`.toLowerCase().includes(query.toLowerCase()));
  return <main className={selectedProduct?'detail-open':''}>
