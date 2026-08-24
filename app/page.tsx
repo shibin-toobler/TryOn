@@ -23,7 +23,7 @@ export default function Home(){
  const [loggedIn,setLoggedIn]=useState(false),[login,setLogin]=useState(false),[upload,setUpload]=useState(false),[liked,setLiked]=useState<number[]>([]),[query,setQuery]=useState(''),[tryProduct,setTryProduct]=useState<Product|null>(null),[tryHistory,setTryHistory]=useState<Product[]>([]);
  const toggleLike=(id:number)=>setLiked(v=>v.includes(id)?v.filter(x=>x!==id):[...v,id]);
  const requestUpload=()=>loggedIn?setUpload(true):setLogin(true);
- const openTryOn=(product:Product)=>{if(!loggedIn){setLogin(true);return;}setTryProduct(product);setTryHistory(h=>[product,...h.filter(x=>x.id!==product.id)].slice(0,6));};
+ const openTryOn=(product:Product)=>{setTryProduct(product);setTryHistory(h=>[product,...h.filter(x=>x.id!==product.id)].slice(0,6));};
  const visible=products.filter(p=>`${p.name} ${p.category}`.toLowerCase().includes(query.toLowerCase()));
  return <main>
  <header className="topbar"><button className="menu"><Menu size={20}/></button><div className="brand"><span className="brand-mark"><Sparkles size={15}/></span>PERSONALIZED<span>ECOMMERCE</span></div><div className="search"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search your world"/></div><div className="actions"><button className="icon"><Bell size={18}/></button><button className="icon"><Heart size={18}/>{liked.length>0&&<i>{liked.length}</i>}</button><button className="icon"><ShoppingBag size={18}/></button>{loggedIn?<button className="avatar" onClick={()=>setLogin(true)}>S</button>:<button className="login-link" onClick={()=>setLogin(true)}>LOGIN</button>}</div></header>
