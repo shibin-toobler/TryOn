@@ -261,6 +261,19 @@ export class TryOnWidget {
     }
   }
 
+  private async uploadDefault(): Promise<void> {
+    this.store.set({ uploading: true, error: null });
+    try {
+      const url = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=900&q=80';
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const file = new File([blob], 'default-model.jpg', { type: blob.type });
+      await this.upload(file);
+    } catch (error) {
+      this.store.set({ uploading: false, error: 'Could not load default model. Please try again.' });
+    }
+  }
+
   private async removePhoto(): Promise<void> {
     const { visitorToken } = this.store.get();
     if (!visitorToken) return;
@@ -319,6 +332,7 @@ export class TryOnWidget {
         renderModal(state, state.pendingProduct, {
           onClose: () => this.store.set({ modalOpen: false, pendingProduct: null, error: null }),
           onUpload: (file) => void this.upload(file),
+          onSkip: () => void this.uploadDefault(),
         }),
       );
     }

@@ -11,14 +11,14 @@ const products:Product[]=[
 {id:4,sku:'SELENE-004',name:'Silk Column Dress',category:'Women’s Fashion',price:8890,image:'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85',reason:'Selected around your preferred silhouettes',tag:'AI PICK'},
 {id:5,sku:'SELENE-005',name:'Soft Tailored Blazer',category:'Women’s Fashion',price:7290,image:'https://images.unsplash.com/photo-1548624149-fb2d7b6b4c3d?auto=format&fit=crop&w=900&q=85',reason:'Matches your polished style'},
 {id:6,sku:'SELENE-006',name:'Everyday Midi Dress',category:'Women’s Fashion',price:4590,image:'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=900&q=85',reason:'Based on your recent fashion signals'},
-{id:7,name:'Relaxed Cotton Tee',category:'Casual Wear',price:1490,image:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',reason:'An easy match for your everyday wardrobe'},
-{id:8,name:'Relaxed Fit Denim',category:'Casual Wear',price:3490,image:'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85',reason:'Pairs with pieces you already like'},
-{id:9,name:'Lightweight Co-ord Set',category:'Casual Wear',price:5290,image:'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=85',reason:'Picked for your relaxed style'},
-{id:10,name:'Classic Tailored Blazer',category:'Formal Wear',price:8490,image:'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=85',reason:'A strong match for your smart wardrobe'},
-{id:11,name:'Pleated Formal Trousers',category:'Formal Wear',price:3990,image:'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85',reason:'Complements your refined preferences'},
-{id:12,name:'Performance Training Set',category:'Activewear',price:4290,image:'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=85',reason:'Selected for your active routine'},
-{id:13,name:'Lightweight Run Jacket',category:'Activewear',price:5590,image:'https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=900&q=85',reason:'Fits your movement and fitness interests'},
-{id:14,name:'Studio Training Tee',category:'Activewear',price:2190,image:'https://images.unsplash.com/photo-1506629905607-d405d7d3c3cc?auto=format&fit=crop&w=900&q=85',reason:'A practical pick for your workouts'}
+{id:7,sku:'SELENE-007',name:'Relaxed Cotton Tee',category:'Casual Wear',price:1490,image:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80',reason:'An easy match for your everyday wardrobe'},
+{id:8,sku:'SELENE-008',name:'Relaxed Fit Denim',category:'Casual Wear',price:3490,image:'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85',reason:'Pairs with pieces you already like'},
+{id:9,sku:'SELENE-009',name:'Lightweight Co-ord Set',category:'Casual Wear',price:5290,image:'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=85',reason:'Picked for your relaxed style'},
+{id:10,sku:'SELENE-010',name:'Classic Tailored Blazer',category:'Formal Wear',price:8490,image:'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=85',reason:'A strong match for your smart wardrobe'},
+{id:11,sku:'SELENE-011',name:'Pleated Formal Trousers',category:'Formal Wear',price:3990,image:'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85',reason:'Complements your refined preferences'},
+{id:12,sku:'SELENE-012',name:'Performance Training Set',category:'Activewear',price:4290,image:'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=85',reason:'Selected for your active routine'},
+{id:13,sku:'SELENE-013',name:'Lightweight Run Jacket',category:'Activewear',price:5590,image:'https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=900&q=85',reason:'Fits your movement and fitness interests'},
+{id:14,sku:'SELENE-014',name:'Studio Training Tee',category:'Activewear',price:2190,image:'https://images.unsplash.com/photo-1506629905607-d405d7d3c3cc?auto=format&fit=crop&w=900&q=85',reason:'A practical pick for your workouts'}
 ];
 const interests=['Men’s Fashion','Women’s Fashion','Casual Wear','Formal Wear','Activewear'];
 const collections=[

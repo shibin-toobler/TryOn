@@ -5,6 +5,7 @@ import { esc, fromHtml, on } from './dom';
 export interface ModalHandlers {
   onClose(): void;
   onUpload(file: File): void;
+  onSkip?(): void;
 }
 
 /**
@@ -49,6 +50,12 @@ export function renderModal(
             <input type="file" accept="image/jpeg,image/png,image/webp" ${busy ? 'disabled' : ''}>
           </label>
 
+          ${
+            handlers.onSkip
+              ? `<button type="button" class="skip-btn" style="background:transparent;border:none;color:var(--tryon-ink);font-size:11px;font-weight:600;margin-top:12px;cursor:pointer;text-decoration:underline;">Skip & use default model</button>`
+              : ''
+          }
+
           ${state.error ? `<p class="fine" role="alert" style="color:var(--tryon-accent)">${esc(state.error)}</p>` : ''}
 
           <p class="fine">
@@ -61,6 +68,7 @@ export function renderModal(
   `);
 
   on(node, '.close', 'click', handlers.onClose);
+  if (handlers.onSkip) on(node, '.skip-btn', 'click', handlers.onSkip);
 
   // Clicking the dimmed area closes; clicking inside the card must not.
   node.addEventListener('mousedown', (event) => {
