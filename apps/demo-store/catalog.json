@@ -2,13 +2,13 @@
   {
     "sku": "SELENE-001",
     "name": "Structured Overshirt",
-    "color": "Charcoal",
+    "color": "White",
     "price": 3290,
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85",
     "description": "A structured overshirt suitable for minimal style.",
-    "category": "shirt",
-    "promptHint": "Structured overshirt, unbuttoned slightly, charcoal."
+    "category": "top",
+    "promptHint": "Relaxed white structured overshirt, clean minimal fit."
   },
   {
     "sku": "SELENE-002",
@@ -18,7 +18,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=900&q=85",
     "description": "Everyday knit polo shirt.",
-    "category": "shirt",
+    "category": "top",
     "promptHint": "Knit polo shirt, navy blue, soft fabric."
   },
   {
@@ -29,7 +29,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=900&q=85",
     "description": "Clean everyday style linen shirt.",
-    "category": "shirt",
+    "category": "top",
     "promptHint": "White tailored linen shirt, clean fit."
   },
   {
@@ -51,7 +51,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1548624149-fb2d7b6b4c3d?auto=format&fit=crop&w=900&q=85",
     "description": "Matches your polished style.",
-    "category": "jacket",
+    "category": "outerwear",
     "promptHint": "Soft tailored beige blazer."
   },
   {
@@ -73,8 +73,8 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80",
     "description": "An easy match for your everyday wardrobe",
-    "category": "shirt",
-    "promptHint": "Relaxed white cotton t-shirt."
+    "category": "top",
+    "promptHint": "Relaxed white cotton t-shirt, casual everyday fit."
   },
   {
     "sku": "SELENE-008",
@@ -84,7 +84,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85",
     "description": "Pairs with pieces you already like",
-    "category": "pants",
+    "category": "bottom",
     "promptHint": "Relaxed fit blue denim jeans."
   },
   {
@@ -95,7 +95,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=900&q=85",
     "description": "Picked for your relaxed style",
-    "category": "set",
+    "category": "full_outfit",
     "promptHint": "Lightweight matching co-ord set in olive green."
   },
   {
@@ -106,8 +106,8 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=900&q=85",
     "description": "A strong match for your smart wardrobe",
-    "category": "jacket",
-    "promptHint": "Classic navy tailored blazer."
+    "category": "outerwear",
+    "promptHint": "Classic navy blue checkered 3-piece tailored blazer suit with tie."
   },
   {
     "sku": "SELENE-011",
@@ -117,7 +117,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=900&q=85",
     "description": "Complements your refined preferences",
-    "category": "pants",
+    "category": "bottom",
     "promptHint": "Grey pleated formal trousers."
   },
   {
@@ -128,7 +128,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=85",
     "description": "Selected for your active routine",
-    "category": "set",
+    "category": "full_outfit",
     "promptHint": "Black athletic performance training set."
   },
   {
@@ -139,7 +139,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=900&q=85",
     "description": "Fits your movement and fitness interests",
-    "category": "jacket",
+    "category": "outerwear",
     "promptHint": "Lightweight silver running jacket."
   },
   {
@@ -150,7 +150,7 @@
     "currency": "INR",
     "image": "https://images.unsplash.com/photo-1506629905607-d405d7d3c3cc?auto=format&fit=crop&w=900&q=85",
     "description": "A practical pick for your workouts",
-    "category": "shirt",
+    "category": "top",
     "promptHint": "White activewear training t-shirt."
   }
 ]

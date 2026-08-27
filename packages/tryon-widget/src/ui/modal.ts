@@ -26,41 +26,31 @@ export function renderModal(
       <div class="studio">
         <button class="close" type="button" aria-label="Close try-on">${icons.close(19)}</button>
 
-        <div class="visual">
-          ${product ? `<img src="${esc(product.imageUrl)}" alt="">` : ''}
-          ${
-            product
-              ? `<span class="visual-chip">${icons.sparkles(13)} Next up · ${esc(product.name)}</span>`
-              : ''
-          }
-        </div>
-
-        <div class="upload">
-          <div class="upload-icon">${icons.imagePlus(27)}</div>
-          <p class="eyebrow">Your virtual model</p>
+        <div class="upload-drop">
+          <div style="color:var(--tryon-accent); margin-bottom:25px;">
+            ${icons.imagePlus(34)}
+          </div>
           <h2>${esc(headline)}</h2>
           <p class="lede">
-            Upload one clear, full-body photo. It stays with you while you browse,
-            so every look after this one appears instantly${product ? ` — starting with the ${esc(product.name)}` : ''}.
+            Drop a clear full-body photo here to begin your AI try-on experience.
           </p>
 
           <label class="upload-btn${busy ? ' is-busy' : ''}">
-            ${icons.upload(16)}
-            <span class="upload-label">${busy ? 'Uploading…' : 'Upload photo'}</span>
+            <span class="upload-label">${busy ? 'Uploading…' : 'Choose photo'}</span>
+            ${icons.arrowRight(16)}
             <input type="file" accept="image/jpeg,image/png,image/webp" ${busy ? 'disabled' : ''}>
           </label>
 
           ${
             handlers.onSkip
-              ? `<button type="button" class="skip-btn" style="background:transparent;border:none;color:var(--tryon-ink);font-size:11px;font-weight:600;margin-top:12px;cursor:pointer;text-decoration:underline;">Skip & use default model</button>`
+              ? `<button type="button" class="skip-btn ghost-btn" style="margin-top:12px;">Skip & use default model</button>`
               : ''
           }
 
           ${state.error ? `<p class="fine" role="alert" style="color:var(--tryon-accent)">${esc(state.error)}</p>` : ''}
 
           <p class="fine">
-            JPG, PNG or WebP · full body works best.<br>
-            Your photo is used only to render your try-ons and you can delete it at any time.
+            JPG or PNG · Your image stays connected to your profile
           </p>
         </div>
       </div>
