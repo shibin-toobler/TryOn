@@ -11,6 +11,30 @@ export interface GenerationDoc extends Document {
   photo: Types.ObjectId;
   status: GenerationStatus;
   provider: string;
+  /**
+   * Exact model that produced this render — 'gpt-image-1', 'mock', …
+   * Not `model`: Mongoose's Document already owns that name.
+   */
+  modelName: string | null;
+  /** Token counts from the provider. Zeroes for a simulated render. */
+  usage: {
+    textInputTokens: number;
+    imageInputTokens: number;
+    inputTokens: number;
+    outputTokens: number;
+    outputImageTokens: number;
+    outputTextTokens: number;
+  };
+  /**
+   * Cost in USD, priced at the time of the call. Stored per render rather than
+   * recomputed on read, so historical spend survives a rate change.
+   */
+  costUsd: number;
+  /**
+   * How many later requests were answered from this render instead of paying
+   * for a new one. costUsd × cacheHits is what the cache has saved.
+   */
+  cacheHits: number;
   /** Populated once status === 'succeeded'. */
   resultKey: string | null;
   resultMimeType: string | null;
@@ -38,6 +62,17 @@ const generationSchema = new Schema<GenerationDoc>(
       index: true,
     },
     provider: { type: String, required: true },
+    modelName: { type: String, default: null },
+    usage: {
+      textInputTokens: { type: Number, default: 0 },
+      imageInputTokens: { type: Number, default: 0 },
+      inputTokens: { type: Number, default: 0 },
+      outputTokens: { type: Number, default: 0 },
+      outputImageTokens: { type: Number, default: 0 },
+      outputTextTokens: { type: Number, default: 0 },
+    },
+    costUsd: { type: Number, default: 0 },
+    cacheHits: { type: Number, default: 0 },
     resultKey: { type: String, default: null },
     resultMimeType: { type: String, default: null },
     simulated: { type: Boolean, default: false },
@@ -51,6 +86,8 @@ const generationSchema = new Schema<GenerationDoc>(
 );
 
 generationSchema.index({ visitor: 1, createdAt: -1 });
+// Backs the admin spend report, which always slices by merchant over a window.
+generationSchema.index({ merchant: 1, createdAt: -1 });
 generationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const GenerationModel = model<GenerationDoc>('Generation', generationSchema);

@@ -41,9 +41,9 @@ export class WidgetController {
         merchant: toWidgetMerchant(merchant),
         visitorToken: visitor.token,
         hasPhoto: Boolean(photo),
-        photo: photo ? toPublicPhoto(photo) : null,
+        photo: photo ? await toPublicPhoto(photo) : null,
         product: product ? toPublicProduct(product) : null,
-        recent: recent.map(toPublicGeneration),
+        recent: await Promise.all(recent.map(toPublicGeneration)),
       });
     } catch (error) {
       next(error);
@@ -89,7 +89,7 @@ export class WidgetController {
 
       res.status(201).json({
         visitorToken: visitor.token,
-        photo: toPublicPhoto(photo),
+        photo: await toPublicPhoto(photo),
       });
     } catch (error) {
       next(error);
@@ -122,7 +122,7 @@ export class WidgetController {
 
       res.status(cached ? 200 : 202).json({
         cached,
-        generation: toPublicGeneration(generation),
+        generation: await toPublicGeneration(generation),
       });
     } catch (error) {
       next(error);
@@ -137,7 +137,7 @@ export class WidgetController {
       const visitor = await visitorService.require(req.merchant!._id, visitorToken);
       const generation = await tryOnService.requireForVisitor(visitor, req.params.id);
 
-      res.json({ generation: toPublicGeneration(generation) });
+      res.json({ generation: await toPublicGeneration(generation) });
     } catch (error) {
       next(error);
     }
@@ -149,7 +149,7 @@ export class WidgetController {
       const visitor = await visitorService.require(req.merchant!._id, visitorToken);
       const recent = await tryOnService.listRecent(visitor, limit);
 
-      res.json({ generations: recent.map(toPublicGeneration) });
+      res.json({ generations: await Promise.all(recent.map(toPublicGeneration)) });
     } catch (error) {
       next(error);
     }

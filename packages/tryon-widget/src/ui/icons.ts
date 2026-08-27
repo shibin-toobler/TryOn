@@ -23,4 +23,8 @@ export const icons = {
     svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5h.01"/>', size),
   trash: (size = 13) =>
     svg('<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>', size),
+  plus: (size = 18) => svg('<path d="M12 5v14"/><path d="M5 12h14"/>', size),
+  minus: (size = 18) => svg('<path d="M5 12h14"/>', size),
+  expand: (size = 15) =>
+    svg('<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>', size),
 };

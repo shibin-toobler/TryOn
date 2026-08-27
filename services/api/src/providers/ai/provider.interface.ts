@@ -1,3 +1,5 @@
+import { TokenUsage } from './pricing';
+
 export interface ImageInput {
   buffer: Buffer;
   mimeType: string;
@@ -24,6 +26,12 @@ export interface TryOnResult {
   simulated: boolean;
   /** Provider-side identifier, for support tickets and cost attribution. */
   providerRef?: string;
+  /** Exact model that ran, recorded per render so a model switch stays auditable. */
+  model?: string;
+  /** Token counts as the provider reported them. Zeroes for a simulated render. */
+  usage?: TokenUsage;
+  /** What this render cost, in USD, priced from `usage`. */
+  costUsd?: number;
 }
 
 /**

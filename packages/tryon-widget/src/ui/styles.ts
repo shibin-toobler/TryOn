@@ -125,10 +125,22 @@ h2, h3, h4, p { margin: 0; }
   background: #e8e2d9; overflow: hidden; position: relative;
 }
 .model-preview { height: 100%; position: relative; }
+.model-preview > img { cursor: zoom-in; }
 .preview-shade {
   position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(16,15,18,0) 50%, rgba(16,15,18,.5) 100%);
 }
+/* Sits opposite the look chip so it never covers the garment name. */
+.preview-expand {
+  position: absolute; right: 12px; top: 12px; z-index: 3;
+  width: 32px; height: 32px; border-radius: 10px;
+  display: grid; place-items: center; color: #fff;
+  background: rgba(20,19,21,.42); border: 1px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(10px); cursor: pointer; opacity: .85;
+  transition: opacity .15s ease, background .15s ease;
+}
+.preview-expand:hover { opacity: 1; background: rgba(20,19,21,.6); }
+.preview-expand:focus-visible { outline: 2px solid #fff; outline-offset: 2px; opacity: 1; }
 .look-chip {
   position: absolute; left: 12px; top: 12px; z-index: 3; max-width: calc(100% - 24px);
   display: flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 12px;
@@ -145,26 +157,36 @@ h2, h3, h4, p { margin: 0; }
   backdrop-filter: blur(10px);
 }
 
-/* Thumbnail dock, overlaid on the image */
-.preview-look-dock {
-  position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 4;
-  display: flex; gap: 8px; align-items: center; max-width: calc(100% - 24px);
-  padding: 8px 9px; border-radius: 16px; overflow-x: auto;
-  background: rgba(20,19,21,.3); border: 1px solid rgba(255,255,255,.25);
-  backdrop-filter: blur(12px); scrollbar-width: none;
+/* Session strip — under the image, not over it, so every look is labelled and
+   the garment names stay readable. */
+.strip-wrap { padding: 10px 16px 0; }
+.strip-head {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--tryon-muted); margin: 0 0 7px;
 }
-.preview-look-dock::-webkit-scrollbar { display: none; }
-.preview-thumb {
-  position: relative; flex: 0 0 48px; width: 48px; height: 61px; padding: 2px;
-  border-radius: 11px; opacity: .62; background: rgba(255,255,255,.12); transition: .2s;
+.strip {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
+  scrollbar-width: thin;
 }
-.preview-thumb:hover { opacity: .92; transform: translateY(-2px); }
-.preview-thumb.active { opacity: 1; background: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.95); }
-.preview-thumb img { border-radius: 8px; }
-.preview-thumb.is-loading::after {
-  content: ''; position: absolute; inset: 2px; border-radius: 8px;
-  background: rgba(20,19,21,.55);
+.shot {
+  flex: 0 0 66px; padding: 0; border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--tryon-line); background: #fff;
+  display: flex; flex-direction: column; text-align: left; cursor: pointer;
+  transition: border-color .13s, box-shadow .13s;
 }
+.shot:hover { border-color: var(--tryon-accent); }
+.shot.on {
+  border-color: var(--tryon-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--tryon-accent) 26%, transparent);
+}
+.shot img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; }
+.shot span {
+  font-size: 9.5px; line-height: 1.3; color: var(--tryon-muted);
+  padding: 4px 5px 5px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.shot.on span { color: var(--tryon-ink); font-weight: 600; }
+.shot[aria-disabled=true] { opacity: .5; pointer-events: none; }
 
 /* Stage states */
 .empty-model, .stage-message {
@@ -259,11 +281,71 @@ h2, h3, h4, p { margin: 0; }
   }
   .panel-top { padding: 14px 15px 9px; }
   .panel-top h3 { font-size: 22px; }
-  .preview-look-dock { bottom: 12px; gap: 6px; padding: 6px 7px; }
-  .preview-thumb { flex-basis: 44px; width: 44px; height: 56px; }
+  .strip-wrap { padding: 8px 14px 0; }
+  .shot { flex-basis: 58px; }
   .panel-info { padding: 8px 14px 0; }
   .panel-footer { padding: 8px 14px 12px; }
 }
+
+/* ── Full-size viewer ─────────────────────────────────────────────────────
+   Above the panel, since it is opened from inside it. */
+.viewer { position: fixed; inset: 0; z-index: 2147483100; background: rgba(0,0,0,.92); }
+
+/* The stage owns the whole overlay so the image is centred in the viewport, not
+   in the space left over above the toolbar. touch-action:none is what lets the
+   pinch handler see both pointers instead of the browser eating them. */
+.viewer-stage { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: zoom-in; }
+.viewer-stage.grab { cursor: grab; }
+.viewer-stage.grab:active { cursor: grabbing; }
+
+/* Sized in natural pixels and moved by transform — transform does not reflow,
+   so panning and pinching stay smooth on a phone.
+ *
+ * Absolutely positioned and centred by negative margins rather than by grid or
+ * flex centring, and the reason is not cosmetic. Layout centring measures the
+ * element at its NATURAL size, because transforms are applied after layout. A
+ * 1536px-tall render therefore sizes a 1536px track inside a 700px viewport and
+ * gets centred within the track, so the scaled-down image lands hundreds of
+ * pixels down the page and hangs off the bottom. Taking it out of flow means
+ * layout has no size to react to, and transform-origin:center keeps the box
+ * centre pinned to the stage centre at every scale. */
+.viewer-stage img {
+  position: absolute; left: 50%; top: 50%;
+  display: block; transform-origin: center center;
+  user-select: none; -webkit-user-drag: none;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+}
+
+.viewer-bar {
+  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 9px; border-radius: 999px;
+  background: rgba(20,20,20,.82); border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(8px);
+  color: #fff; font-size: 13px; max-width: calc(100vw - 32px);
+}
+.viewer-cap {
+  max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 0 8px 0 6px; color: rgba(255,255,255,.8); font-size: 12.5px;
+}
+.viewer-bar button, .viewer-bar .viewer-dl {
+  min-width: 32px; height: 32px; padding: 0 9px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 999px; background: transparent;
+  color: #fff; font-size: 16px; line-height: 1; text-decoration: none; cursor: pointer;
+}
+.viewer-bar button:hover:not(:disabled), .viewer-bar .viewer-dl:hover { background: rgba(255,255,255,.16); }
+.viewer-bar button:disabled { opacity: .35; cursor: default; }
+.viewer-bar button:focus-visible, .viewer-bar .viewer-dl:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
+.viewer-pct { font-size: 12.5px; min-width: 52px; font-variant-numeric: tabular-nums; }
+.viewer-fit { font-size: 12.5px; }
+.viewer-x { font-size: 22px; }
+
+@media (max-width: 640px) {
+  /* The caption is the first thing worth losing when the bar runs out of room. */
+  .viewer-cap { display: none; }
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   *, *::after { animation: none !important; transition: none !important; }

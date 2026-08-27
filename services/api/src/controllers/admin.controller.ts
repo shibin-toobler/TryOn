@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { merchantService } from '../services/merchant.service';
 import { catalogService } from '../services/catalog.service';
-import { toAdminMerchant, toAdminProduct } from '../dto/mappers';
+import { usageService } from '../services/usage.service';
+import { toAdminGeneration, toAdminMerchant, toAdminProduct } from '../dto/mappers';
+import { UsageQuery } from '../validators/admin.validators';
 import { env } from '../config/env';
 
 /** Server-to-server surface: merchant onboarding and catalog sync. */
@@ -27,6 +29,28 @@ export class AdminController {
         merchant: toAdminMerchant(merchant),
         embedSnippet: buildSnippet(merchant.publishableKey),
       });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /** Spend report: what the model has cost this merchant, and what the cache saved. */
+  usage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { from, to, timezone } = req.query as unknown as UsageQuery;
+      const report = await usageService.report(req.merchant!._id, { from, to, timezone });
+      res.json(report);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /** Recent renders with their individual costs, newest first. */
+  listGenerations = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const limit = Math.min(Number(req.query.limit) || 25, 100);
+      const generations = await usageService.recent(req.merchant!._id, limit);
+      res.json({ generations: await Promise.all(generations.map(toAdminGeneration)) });
     } catch (error) {
       next(error);
     }

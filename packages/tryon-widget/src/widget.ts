@@ -4,6 +4,7 @@ import { Generation, Product, TryOnConfig } from './types';
 import { styles } from './ui/styles';
 import { renderModal } from './ui/modal';
 import { renderPanel } from './ui/panel';
+import { createViewer, Viewer } from './ui/viewer';
 import { icons } from './ui/icons';
 import { fromHtml } from './ui/dom';
 
@@ -20,6 +21,12 @@ export class TryOnWidget {
   private booting: Promise<void> | null = null;
   /** Guards against a second render being queued while one is in flight. */
   private generating = false;
+  /**
+   * Lives on the shadow root rather than in `container`, which is emptied and
+   * rebuilt on every state change — keeping it here is what lets a shopper stay
+   * zoomed in while a new look finishes rendering behind them.
+   */
+  private viewer: Viewer | null = null;
 
   constructor(private readonly config: TryOnConfig) {
     this.api = new TryOnApi(config.apiUrl, config.key);
@@ -57,6 +64,8 @@ export class TryOnWidget {
   }
 
   destroy(): void {
+    // Before the host goes: the viewer owns a document-level keydown listener.
+    this.closeViewer();
     document.removeEventListener('keydown', this.onKeydown);
     document.removeEventListener('click', this.onDocumentClick, true);
     document.documentElement.classList.remove('tryon-panel-open');
@@ -280,6 +289,19 @@ export class TryOnWidget {
 
   // ── rendering ───────────────────────────────────────────────────────────
 
+  /** Opens the zoomable full view. Re-opening replaces whatever was showing. */
+  private openViewer(url: string, alt: string, caption: string): void {
+    if (!this.shadow) return;
+    this.closeViewer();
+    this.viewer = createViewer(url, alt, caption, () => this.closeViewer());
+    this.shadow.appendChild(this.viewer.element);
+  }
+
+  private closeViewer(): void {
+    this.viewer?.close();
+    this.viewer = null;
+  }
+
   private render(): void {
     if (!this.container) return;
 
@@ -304,7 +326,10 @@ export class TryOnWidget {
     if (state.panelOpen && !state.modalOpen) {
       this.container.appendChild(
         renderPanel(state, {
-          onClose: () => this.store.set({ panelOpen: false }),
+          onClose: () => {
+            this.closeViewer();
+            this.store.set({ panelOpen: false });
+          },
           onSelectLook: (look: Generation | null) =>
             this.store.set({ current: look, stage: look ? 'ready' : 'idle', error: null }),
           onChangePhoto: (file) => void this.upload(file),
@@ -314,6 +339,7 @@ export class TryOnWidget {
             if (product) void this.generate(product, true);
           },
           onUpload: (file) => void this.upload(file),
+          onExpand: (url, alt, caption) => this.openViewer(url, alt, caption),
         }),
       );
     }

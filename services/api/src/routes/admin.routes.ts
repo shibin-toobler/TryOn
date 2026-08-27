@@ -6,6 +6,7 @@ import {
   createMerchantSchema,
   externalIdParamsSchema,
   productBatchSchema,
+  usageQuerySchema,
 } from '../validators/admin.validators';
 
 const router = Router();
@@ -22,6 +23,8 @@ router.post(
 router.use(requireSecretKey);
 
 router.get('/me', adminController.me);
+router.get('/usage', validate(usageQuerySchema, 'query'), adminController.usage);
+router.get('/generations', adminController.listGenerations);
 router.get('/products', adminController.listProducts);
 router.post('/products', validate(productBatchSchema), adminController.upsertProducts);
 router.delete(

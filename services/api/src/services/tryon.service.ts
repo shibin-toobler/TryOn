@@ -35,7 +35,12 @@ export class TryOnService {
         photo._id,
       );
       // Same person, same garment, same photo — no reason to pay for it twice.
-      if (cached) return { generation: cached, cached: true };
+      if (cached) {
+        // Counted, not just avoided: the spend report can then show what the
+        // cache is actually saving instead of asserting that it helps.
+        await generationRepository.recordCacheHit(cached._id);
+        return { generation: cached, cached: true };
+      }
     }
 
     await this.enforceRateLimit(visitor._id);

@@ -61,6 +61,9 @@ async function writeDemoEnv(merchant: MerchantDoc): Promise<string> {
     '# Written by `npm run seed`. Safe to delete and regenerate.',
     `NEXT_PUBLIC_TRYON_API_URL=${env.publicBaseUrl}`,
     `NEXT_PUBLIC_TRYON_KEY=${merchant.publishableKey}`,
+    '# Sent as Origin on the storefront\'s server-side catalog fetch, which has no',
+    '# browser to set one. Must be on the merchant\'s allowlist once that is filled in.',
+    `NEXT_PUBLIC_STORE_ORIGIN=${process.env.STORE_ORIGIN ?? 'http://localhost:3000'}`,
     '',
   ].join('\n');
 

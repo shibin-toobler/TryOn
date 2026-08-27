@@ -3,6 +3,8 @@ import { generationRepository } from '../repositories/generation.repository';
 import { photoRepository } from '../repositories/photo.repository';
 import { productRepository } from '../repositories/product.repository';
 import { getTryOnProvider } from '../providers/ai';
+import { EMPTY_USAGE } from '../providers/ai/pricing';
+import { GenerationDoc } from '../models';
 import { storage } from '../storage';
 import { fetchImage } from '../utils/fetchImage';
 import { logger } from '../utils/logger';
@@ -70,17 +72,20 @@ export async function processGeneration(generationId: Types.ObjectId): Promise<v
       resultKey: stored.key,
       resultMimeType: stored.mimeType,
       simulated: result.simulated,
+      modelName: result.model ?? null,
+      usage: result.usage ?? EMPTY_USAGE,
+      costUsd: result.costUsd ?? 0,
       completedAt,
       durationMs: completedAt.getTime() - startedAt.getTime(),
       error: null,
       // Renders age out with the photo that produced them.
       expiresAt: photo.expiresAt,
-    });
+    } as Partial<GenerationDoc>);
 
     logger.info(
       `generation ${generation._id.toString()} succeeded in ${
         completedAt.getTime() - startedAt.getTime()
-      }ms via ${provider.name}`,
+      }ms via ${provider.name} — $${(result.costUsd ?? 0).toFixed(4)}`,
     );
   } catch (error) {
     const message = (error as Error).message || 'Generation failed.';

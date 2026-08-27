@@ -87,9 +87,20 @@ collide in either direction, and it loads no webfonts or external assets.
 ## Product catalog
 
 The engine keeps its own copy of the products so it controls the garment images the model
-sees. `apps/demo-store/catalog.json` is the single source of truth in this repo: the
-storefront renders from it and `npm run seed` pushes it into the engine. A real merchant
-would instead POST their feed:
+sees, and **the storefront renders from that database, not from a file**. `page.tsx` is a
+server component that calls `GET /v1/widget/products` on every request with
+`cache: 'no-store'`, so adding, editing or deactivating a product shows up on the next page
+load with no rebuild — including the colour filter chips, which are derived from whatever
+is actually in the catalog.
+
+`apps/demo-store/catalog.json` is now only the *feed* that `npm run seed` imports, exactly
+as a real merchant's nightly catalog sync would. Nothing renders from it.
+
+That server-side fetch has no browser to set an `Origin` header, so it sends
+`NEXT_PUBLIC_STORE_ORIGIN` (written by the seed) explicitly — which means the storefront
+keeps working once you fill in the merchant's origin allowlist.
+
+A real merchant would POST their feed rather than seed from a file:
 
 ```bash
 curl -X POST http://localhost:4000/v1/admin/products \
@@ -115,9 +126,24 @@ Everything lives in `services/api/.env`; `.env.example` documents each variable.
 ```
 AI_PROVIDER=mock     # or openai
 OPENAI_API_KEY=…
-OPENAI_IMAGE_MODEL=gpt-image-1
-OPENAI_IMAGE_SIZE=1024x1536
+OPENAI_IMAGE_MODEL=gpt-image-2
+OPENAI_IMAGE_SIZE=auto
+OPENAI_IMAGE_QUALITY=medium
+OPENAI_IMAGE_FIDELITY=high
 ```
+
+Two dials that sound alike and are not. **`quality`** is how finely the output
+renders — that is the cost lever, cut it first. **`input_fidelity`** is how much of the
+shopper survives the edit, their face above all — that is the product, don't cut it. Only
+the `gpt-image-1` family accepts `input_fidelity`; `gpt-image-2` returns a 400, so
+`openai.provider.ts` gates on the model name.
+
+Measured on one render: turning fidelity on took `gpt-image-1` from 646 to 13,126 input
+image tokens, $0.071 → $0.198. `gpt-image-2` doesn't take the parameter and costs $0.078,
+making it the cheapest of the three at settings that keep a face intact.
+
+`size: auto` keeps the shopper photo's own aspect ratio. A fixed size makes the model
+re-compose the shot, which is much of why backgrounds come back rebuilt.
 
 `mock` returns the shopper's own photo after a delay — no API calls, no cost — and flags
 the result as `simulated`, which the panel shows as a "Simulated" badge. Use it to build
@@ -127,25 +153,77 @@ an identity-preserving prompt (`src/providers/ai/prompt.ts`).
 Adding another engine means one file implementing `TryOnProvider` and one case in
 `src/providers/ai/index.ts`. Nothing above that layer knows which model is in use.
 
+### Cost tracking
+
+Every render records what it cost. `gpt-image-1` returns a `usage` object on each call,
+billed across three meters, and the provider prices it immediately:
+
+```
+PRICE_TEXT_INPUT_PER_MTOK=5     # the prompt
+PRICE_IMAGE_INPUT_PER_MTOK=10   # the two reference images going in
+PRICE_IMAGE_OUTPUT_PER_MTOK=40  # the render coming out — this is the bill
+```
+
+Rates live in `.env` rather than in code, and the resulting figure is **stored on the
+generation**, not recomputed on read: changing a rate affects new renders only, so last
+month's spend stays what it actually was. Check the numbers against
+<https://openai.com/api/pricing/> — they are only as current as the day they were typed.
+
+```bash
+curl -H "Authorization: Bearer sk_…" localhost:4000/v1/admin/usage
+```
+
+returns spend and volume for the window (last 30 days by default), the same figures
+bucketed by day in `Asia/Kolkata`, and the products costing the most. `GET
+/v1/admin/generations` lists individual renders with their costs.
+
+The report separates **billable** from **simulated** renders, so `avgCostPerRenderUsd` is
+not quietly diluted by mock ones. It also counts cache hits: repeating the same photo +
+garment serves the stored render, and `savedUsd` is what those repeats would have cost at
+the price of the render they were served from.
+
+Cost never appears on the widget surface — what a render costs is the merchant's business,
+not the shopper's.
+
 ### Storage
 
+`s3`, `cloudinary` or `local`, behind one `StorageDriver` interface. S3 is the default.
+
 ```
-STORAGE_DRIVER=cloudinary   # or local
-CLOUDINARY_CLOUD_NAME=…
-CLOUDINARY_API_KEY=…        # the ~15-digit number
-CLOUDINARY_API_SECRET=…     # the 27-character string
-CLOUDINARY_DELIVERY=authenticated
+STORAGE_DRIVER=s3
+AWS_REGION=ap-south-1       # Mumbai; ap-south-2 is Hyderabad
+S3_BUCKET=your-bucket
+AWS_ACCESS_KEY_ID=…         # omit both on EC2/ECS to use the IAM role instead
+AWS_SECRET_ACCESS_KEY=…
+S3_DELIVERY=presigned
+S3_URL_EXPIRY_SECONDS=3600
 ```
 
-`authenticated` delivery means every asset URL carries a signature and cannot be guessed
-from its public ID — the right default for photographs of real people. `public` gives
-plain cacheable CDN URLs.
+Keep the bucket in the same region as the API — every render reads the shopper's photo
+back out of it, so a cross-region hop is paid on the critical path of a 10–40s operation.
 
-> **Current state:** Cloudinary is wired and the credentials in `.env` authenticate, but
-> that API key lacks upload permission — uploads return
-> `403 Request forbidden due to missing permissions (actions=["create"])`. Grant the key
-> the `create` permission under Cloudinary → Settings → API Keys (or use the account's
-> master key), then set `STORAGE_DRIVER=cloudinary`. Until then it runs on `local`.
+`presigned` keeps the bucket private with Block Public Access left on, and hands the
+browser a signed URL that expires: a leaked link stops working, and nothing is reachable
+by guessing a key. That is the right default for photographs of real people. `public`
+assumes world-readable objects and returns a plain cacheable URL — reasonable only behind
+CloudFront, via `S3_PUBLIC_BASE_URL`.
+
+Objects are written with `ServerSideEncryption: AES256`, and the key stored in Mongo
+excludes `S3_PREFIX`, so the prefix can change later without orphaning existing rows.
+
+Setting `S3_ENDPOINT` points the driver at MinIO or any S3-compatible service instead
+of AWS.
+
+The IAM user needs exactly three actions on the bucket:
+
+```json
+{ "Effect": "Allow",
+  "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject"],
+  "Resource": "arn:aws:s3:::your-bucket/*" }
+```
+
+`local` writes to `services/api/storage` and serves from `/files` — fine for development,
+but it does not survive a redeploy, so it is not a deployment option.
 
 ### Retention
 
@@ -171,7 +249,8 @@ allowlist:
 | `GET /v1/widget/generations` | Recent looks for the dock. |
 
 **Admin routes** — server-to-server, secret key. `POST /v1/admin/merchants` (guarded by
-`ADMIN_BOOTSTRAP_TOKEN`), `GET /v1/admin/me`, and CRUD on `/v1/admin/products`.
+`ADMIN_BOOTSTRAP_TOKEN`), `GET /v1/admin/me`, CRUD on `/v1/admin/products`, plus
+`GET /v1/admin/usage` and `GET /v1/admin/generations` for spend.
 
 `GET /health` reports database, provider and queue depth.
 

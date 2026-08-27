@@ -81,7 +81,7 @@ export class CloudinaryStorageDriver implements StorageDriver {
   }
 
   async read(key: string): Promise<Buffer> {
-    const response = await fetch(this.urlFor(key));
+    const response = await fetch(await this.urlFor(key));
     if (!response.ok) {
       throw AppError.notFound(`Cloudinary asset not readable (HTTP ${response.status}).`);
     }
@@ -110,7 +110,7 @@ export class CloudinaryStorageDriver implements StorageDriver {
     }
   }
 
-  urlFor(key: string): string {
+  async urlFor(key: string): Promise<string> {
     return cloudinary.url(key, {
       secure: true,
       resource_type: 'image',

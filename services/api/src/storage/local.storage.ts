@@ -60,7 +60,7 @@ export class LocalStorageDriver implements StorageDriver {
     }
   }
 
-  urlFor(key: string): string {
+  async urlFor(key: string): Promise<string> {
     return `${env.publicBaseUrl}/files/${key}`;
   }
 }

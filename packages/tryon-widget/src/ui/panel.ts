@@ -9,6 +9,8 @@ export interface PanelHandlers {
   onRemovePhoto(): void;
   onRetry(): void;
   onUpload(file: File): void;
+  /** Opens the full-size zoomable view of whatever is currently on the stage. */
+  onExpand(url: string, alt: string, caption: string): void;
 }
 
 /**
@@ -29,6 +31,8 @@ export function renderPanel(state: WidgetState, handlers: PanelHandlers): HTMLEl
       </div>
 
       <div class="panel-stage">${renderStage(state)}</div>
+
+      ${renderStrip(state)}
 
       ${
         photo
@@ -60,7 +64,17 @@ export function renderPanel(state: WidgetState, handlers: PanelHandlers): HTMLEl
     if (file) handlers.onUpload(file);
   });
 
-  on(node, '.preview-thumb', 'click', (_event, element) => {
+  // Both the image itself and the corner button open the full view — the button
+  // is what makes it discoverable, the image is what people actually click.
+  const expand = (): void => {
+    const image = node.querySelector<HTMLImageElement>('.model-preview > img');
+    if (!image || stage === 'generating') return;
+    handlers.onExpand(image.src, image.alt, current?.product?.name ?? 'Your photo');
+  };
+  on(node, '.preview-expand', 'click', expand);
+  on(node, '.model-preview > img', 'click', expand);
+
+  on(node, '.shot', 'click', (_event, element) => {
     const id = element.dataset.generationId;
     if (!id) {
       handlers.onSelectLook(null);
@@ -72,8 +86,8 @@ export function renderPanel(state: WidgetState, handlers: PanelHandlers): HTMLEl
 
   // Generating is a busy state — do not let a second click queue another render.
   if (stage === 'generating') {
-    node.querySelectorAll<HTMLElement>('.preview-thumb').forEach((thumb) => {
-      thumb.setAttribute('aria-disabled', 'true');
+    node.querySelectorAll<HTMLElement>('.shot').forEach((shot) => {
+      shot.setAttribute('aria-disabled', 'true');
     });
   }
 
@@ -149,6 +163,15 @@ function renderStage(state: WidgetState): string {
       <img src="${esc(imageUrl)}" alt="${esc(alt)}">
       <div class="preview-shade"></div>
       ${
+        // Hidden mid-render: the generating overlay covers the image anyway, so
+        // the button would be a control that visibly does nothing.
+        stage === 'generating'
+          ? ''
+          : `<button class="preview-expand" type="button" aria-label="View full size">
+               ${icons.expand(15)}
+             </button>`
+      }
+      ${
         current?.product?.name
           ? `<div class="look-chip">${icons.sparkles(13)}<span>
                <b>${esc(current.product.name)}</b>
@@ -157,35 +180,52 @@ function renderStage(state: WidgetState): string {
           : ''
       }
       ${current?.simulated ? '<span class="sim-badge">Simulated</span>' : ''}
-      ${renderDock(state)}
       ${stage === 'generating' ? renderGenerating(state) : ''}
     </div>`;
 }
 
-/** "My photo" first, then every completed look, newest first. */
-function renderDock(state: WidgetState): string {
+/**
+ * Every look from this session, as a labelled strip under the image.
+ *
+ * Two things this gets right that an unlabelled dock overlaid on the photo did
+ * not: each thumbnail says which garment it is, so a shopper comparing three
+ * dresses can tell them apart without clicking through; and the heading counts
+ * the looks they have rendered — the original photo is in the strip so they can
+ * flip back to it, but it is not one of their looks and is not counted as one.
+ */
+function renderStrip(state: WidgetState): string {
   const { photo, current, recent } = state;
   if (!photo) return '';
 
-  const thumbs: string[] = [
-    `<button class="preview-thumb${!current ? ' active' : ''}" type="button" aria-label="Show my photo">
-       <img src="${esc(photo.url)}" alt="My photo">
+  const looks = recent.filter((look) => Boolean(look.resultUrl));
+  // Nothing rendered yet: the strip would only be the photo they can already see.
+  if (!looks.length) return '';
+
+  const shots: string[] = [
+    `<button class="shot${!current ? ' on' : ''}" type="button" title="Your original photo">
+       <img src="${esc(photo.url)}" alt="Your photo">
+       <span>Your photo</span>
      </button>`,
   ];
 
-  recent.forEach((look) => {
-    if (!look.resultUrl) return;
+  looks.forEach((look) => {
     const label = look.product?.name ?? 'Look';
-    thumbs.push(
-      `<button class="preview-thumb${current?.id === look.id ? ' active' : ''}"
-               type="button" data-generation-id="${esc(look.id)}" aria-label="Show ${esc(label)}">
-         <img src="${esc(look.resultUrl)}" alt="${esc(label)}">
+    shots.push(
+      `<button class="shot${current?.id === look.id ? ' on' : ''}" type="button"
+               data-generation-id="${esc(look.id)}" title="${esc(label)}">
+         <img src="${esc(look.resultUrl as string)}" alt="${esc(label)}">
+         <span>${esc(label)}</span>
        </button>`,
     );
   });
 
-  if (thumbs.length < 2 && state.stage !== 'generating') return '';
-  return `<div class="preview-look-dock">${thumbs.join('')}</div>`;
+  return `
+    <div class="strip-wrap">
+      <div class="strip-head">
+        ${looks.length} look${looks.length === 1 ? '' : 's'} this session · tap to compare
+      </div>
+      <div class="strip">${shots.join('')}</div>
+    </div>`;
 }
 
 function renderGenerating(state: WidgetState): string {

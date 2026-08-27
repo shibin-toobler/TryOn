@@ -1,4 +1,5 @@
 import { TryOnProvider, TryOnRequest, TryOnResult } from './provider.interface';
+import { EMPTY_USAGE } from './pricing';
 import { env } from '../../config/env';
 import { logger } from '../../utils/logger';
 
@@ -20,6 +21,11 @@ export class MockProvider implements TryOnProvider {
       mimeType: request.person.mimeType,
       simulated: true,
       providerRef: 'mock',
+      model: 'mock',
+      // Zero, not absent: a mock render belongs in the usage report as a free
+      // row, so the render count and the spend never disagree.
+      usage: { ...EMPTY_USAGE },
+      costUsd: 0,
     };
   }
 }

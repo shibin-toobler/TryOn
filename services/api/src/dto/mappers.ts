@@ -21,27 +21,40 @@ export const toAdminProduct = (p: ProductDoc) => ({
   updatedAt: p.updatedAt,
 });
 
-export const toPublicPhoto = (photo: PhotoDoc) => ({
+/** Async because a stored object's URL may need signing — see StorageDriver.urlFor. */
+export const toPublicPhoto = async (photo: PhotoDoc) => ({
   id: photo._id.toString(),
-  url: storage.urlFor(photo.storageKey),
+  url: await storage.urlFor(photo.storageKey),
   uploadedAt: photo.createdAt,
   expiresAt: photo.expiresAt,
 });
 
-export const toPublicGeneration = (gen: GenerationDoc) => {
+export const toPublicGeneration = async (gen: GenerationDoc) => {
   const product = gen.populated('product') ? (gen.product as unknown as ProductDoc) : null;
 
   return {
     id: gen._id.toString(),
     status: gen.status,
     simulated: gen.simulated,
-    resultUrl: gen.resultKey ? storage.urlFor(gen.resultKey) : null,
+    resultUrl: gen.resultKey ? await storage.urlFor(gen.resultKey) : null,
     error: gen.error,
     durationMs: gen.durationMs,
     createdAt: gen.createdAt,
     product: product ? toPublicProduct(product) : { id: gen.product.toString() },
+    // Deliberately no cost here: what a render costs is the merchant's business,
+    // not the shopper's. It is on the admin surface instead.
   };
 };
+
+/** Same render, seen from the merchant's side — this one carries the money. */
+export const toAdminGeneration = async (gen: GenerationDoc) => ({
+  ...(await toPublicGeneration(gen)),
+  provider: gen.provider,
+  model: gen.modelName,
+  usage: gen.usage,
+  costUsd: gen.costUsd,
+  cacheHits: gen.cacheHits,
+});
 
 export const toWidgetMerchant = (m: MerchantDoc) => ({
   id: m._id.toString(),

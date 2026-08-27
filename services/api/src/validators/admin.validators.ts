@@ -35,5 +35,14 @@ export const externalIdParamsSchema = z.object({
   externalId: z.string().trim().min(1).max(128),
 });
 
+/** Spend report window. Defaults to the last 30 days when nothing is given. */
+export const usageQuerySchema = z.object({
+  from: z.string().trim().datetime({ offset: true }).or(z.string().trim().date()).optional(),
+  to: z.string().trim().datetime({ offset: true }).or(z.string().trim().date()).optional(),
+  /** IANA zone the daily buckets are cut on — India, unless asked otherwise. */
+  timezone: z.string().trim().max(64).optional().default('Asia/Kolkata'),
+});
+
 export type CreateMerchantInput = z.infer<typeof createMerchantSchema>;
 export type ProductInput = z.infer<typeof productSchema>;
+export type UsageQuery = z.infer<typeof usageQuerySchema>;
