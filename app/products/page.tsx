@@ -1,6 +1,6 @@
 'use client';
 import {useState} from 'react';
-import {ChevronRight,Heart,Sparkles,Bell,ShoppingBag,Search,X} from 'lucide-react';
+import {ChevronRight,Heart,Sparkles,Bell,ShoppingBag,Search,X,ImagePlus} from 'lucide-react';
 type Product={id:number;name:string;category:string;price:number;image:string;reason:string;tag?:string};
 const products:Product[]=[
 {id:1,name:'Structured Overshirt',category:'Men’s Fashion',price:3290,image:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85',reason:'Matches your minimal style',tag:'AI PICK'},
@@ -19,5 +19,47 @@ const products:Product[]=[
 {id:14,name:'Studio Training Tee',category:'Activewear',price:2190,image:'https://images.unsplash.com/photo-1506629905607-d405d7d3c3cc?auto=format&fit=crop&w=900&q=85',reason:'A practical pick for your workouts'}
 ];
 const filters=['All fashion','Men’s Fashion','Women’s Fashion','Casual Wear','Formal Wear','Activewear'];
-export default function ProductsPage(){const [filter,setFilter]=useState('All fashion');const [tryProduct,setTryProduct]=useState<Product|null>(null);const [tryHistory,setTryHistory]=useState<Product[]>([]);const openTryOn=(p:Product)=>{setTryProduct(p);setTryHistory(h=>[p,...h.filter(x=>x.id!==p.id)].slice(0,5))};const list=products.filter(p=>filter==='All fashion'||p.category===filter);return <main><header className="topbar"><button className="menu" aria-label="Menu">☰</button><a className="brand" href="/"><span className="brand-mark"><Sparkles size={15}/></span>PERSONALIZED<span>ECOMMERCE</span></a><div className="search"><Search size={17}/><input placeholder="Search your world"/></div><div className="actions"><button className="icon"><Bell size={18}/></button><button className="icon"><Heart size={18}/></button><button className="icon"><ShoppingBag size={18}/></button><a className="login-link" href="/">LOGIN</a></div></header><section className="listing-page"><a className="detail-back" href="/">← Back to home</a><div className="listing-heading"><div><p className="eyebrow">PERSONALIZED COLLECTION</p><h1>More, picked for you.</h1><p>Explore clothing selected around your style, interests and shopping signals.</p></div><span>{list.length} pieces</span></div><div className="listing-filters">{filters.map(x=><button key={x} onClick={()=>setFilter(x)} className={filter===x?'active':''}>{x}</button>)}</div><div className="product-grid listing-grid">{list.map(p=><article className="product" key={p.id}><div className="product-image"><div className="product-open"><a className="product-image-link" href={'/products/'+p.id}><img src={p.image} alt={p.name}/></a><button className="image-try-on" onClick={()=>openTryOn(p)}><Sparkles size={14}/> Try on</button></div><button className="heart"><Heart size={17}/></button>{p.tag&&<span className="tag">{p.tag}</span>}</div><div className="product-meta"><div><p>{p.category}</p><h3>{p.name}</h3></div><strong>₹{p.price.toLocaleString('en-IN')}</strong></div><p className="reason"><Sparkles size={13}/>{p.reason}</p></article>)}</div></section>{tryProduct&&<TryOnStudio product={tryProduct} history={tryHistory} onSelect={setTryProduct} onClose={()=>setTryProduct(null)}/>}</main>}
-function TryOnStudio({product,history,onSelect,onClose}:{product:Product;history:Product[];onSelect:(p:Product)=>void;onClose:()=>void}){return <div className="backdrop try-backdrop" onMouseDown={onClose}><div className="try-studio" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={onClose}><X size={19}/></button><div className="try-preview" style={{backgroundImage:`linear-gradient(90deg,rgba(19,20,24,.08),rgba(19,20,24,.2)),url(${product.image})`}}><div className="try-model"><div className="model-head"></div><div className="model-body"></div></div><span className="preview-label"><Sparkles size={13}/> Preview · {product.name}</span></div><div className="try-panel"><p className="eyebrow">TRY-ON STUDIO</p><h2>Your look, reimagined.</h2><div className="try-product"><img src={product.image} alt={product.name}/><div><h3>{product.name}</h3><p>{product.category} · ₹{product.price.toLocaleString('en-IN')}</p></div></div><div className="try-history-head"><span>Recently tried</span><b>{history.findIndex(x=>x.id===product.id)+1 || 1}/{history.length}</b></div><div className="try-history">{history.map(item=><button key={item.id} className={item.id===product.id?'active':''} onClick={()=>onSelect(item)}><img src={item.image} alt={item.name}/><span>{item.name}</span></button>)}</div><div className="try-actions"><button className="motion">See in motion <Sparkles size={14}/></button><button className="add-bag">Add to bag <ShoppingBag size={14}/></button></div><small>Try-on preview · Compare your recent looks before choosing.</small></div></div></div>}
+export default function ProductsPage(){
+  const [filter,setFilter]=useState('All fashion');
+  const [uploadedPhoto,setUploadedPhoto]=useState<string|null>(null);
+  const [uploadOpen,setUploadOpen]=useState(false);
+  const [tryProduct,setTryProduct]=useState<Product|null>(null);
+  const [pendingProduct,setPendingProduct]=useState<Product|null>(null);
+  const [tryHistory,setTryHistory]=useState<Product[]>([]);
+
+  const launchTryOn=(p:Product)=>{
+    setTryProduct(p);
+    setTryHistory(h=>[p,...h.filter(x=>x.id!==p.id)].slice(0,5));
+  };
+
+  const openTryOn=(p:Product)=>{
+    if(!uploadedPhoto){
+      setPendingProduct(p);
+      setUploadOpen(true);
+    }else{
+      launchTryOn(p);
+    }
+  };
+
+  const handleUploadSuccess=(photo:string)=>{
+    setUploadedPhoto(photo);
+    setUploadOpen(false);
+    if(pendingProduct){
+      launchTryOn(pendingProduct);
+      setPendingProduct(null);
+    }
+  };
+
+  const handleUploadSkip=()=>{
+    setUploadOpen(false);
+    if(pendingProduct){
+      launchTryOn(pendingProduct);
+      setPendingProduct(null);
+    }
+  };
+
+  const list=products.filter(p=>filter==='All fashion'||p.category===filter);
+  return <main><header className="topbar"><button className="menu" aria-label="Menu">☰</button><a className="brand" href="/"><span className="brand-mark"><Sparkles size={15}/></span>PERSONALIZED<span>ECOMMERCE</span></a><div className="search"><Search size={17}/><input placeholder="Search your world"/></div><div className="actions"><button className="icon"><Bell size={18}/></button><button className="icon"><Heart size={18}/></button><button className="icon"><ShoppingBag size={18}/></button><a className="login-link" href="/">LOGIN</a></div></header><section className="listing-page"><a className="detail-back" href="/">← Back to home</a><div className="listing-heading"><div><p className="eyebrow">PERSONALIZED COLLECTION</p><h1>More, picked for you.</h1><p>Explore clothing selected around your style, interests and shopping signals.</p></div><span>{list.length} pieces</span></div><div className="listing-filters">{filters.map(x=><button key={x} onClick={()=>setFilter(x)} className={filter===x?'active':''}>{x}</button>)}</div><div className="product-grid listing-grid">{list.map(p=><article className="product" key={p.id}><div className="product-image"><div className="product-open"><a className="product-image-link" href={'/products/'+p.id}><img src={p.image} alt={p.name}/></a><button className="image-try-on" onClick={()=>openTryOn(p)}><Sparkles size={14}/> Try on</button></div><button className="heart"><Heart size={17}/></button>{p.tag&&<span className="tag">{p.tag}</span>}</div><div className="product-meta"><div><p>{p.category}</p><h3>{p.name}</h3></div><strong>₹{p.price.toLocaleString('en-IN')}</strong></div><p className="reason"><Sparkles size={13}/>{p.reason}</p></article>)}</div></section>{uploadOpen&&<UploadModal onClose={handleUploadSkip} onUpload={handleUploadSuccess} onSkip={handleUploadSkip}/>}{tryProduct&&<TryOnStudio product={tryProduct} history={tryHistory} photo={uploadedPhoto} onSelect={setTryProduct} onChangePhoto={()=>{setPendingProduct(tryProduct);setTryProduct(null);setUploadOpen(true);}} onClose={()=>setTryProduct(null)}/>}</main>
+}
+function UploadModal({onClose,onUpload,onSkip}:{onClose:()=>void;onUpload:(photo:string)=>void;onSkip?:()=>void}){const handlePhoto=(file?:File)=>{if(!file)return;const reader=new FileReader();reader.onload=()=>onUpload(String(reader.result));reader.readAsDataURL(file)};return <div className="backdrop" onMouseDown={onClose}><div className="upload-modal" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={onClose}><X size={19}/></button><div className="upload-drop"><ImagePlus size={34}/><h2>Your virtual model</h2><p>Drop a clear full-body photo here to begin your AI try-on experience.</p><label className="primary upload-choice">Choose photo <ChevronRight size={16}/><input type="file" accept="image/*" onChange={e=>handlePhoto(e.target.files?.[0])}/></label>{onSkip&&<button className="ghost" style={{marginTop:12}} onClick={onSkip}>Skip & use default model</button>}<small style={{marginTop:13}}>JPG or PNG · Your image stays connected to your profile</small></div></div></div>}
+function TryOnStudio({product,history,photo,onSelect,onChangePhoto,onClose}:{product:Product;history:Product[];photo:string|null;onSelect:(p:Product)=>void;onChangePhoto?:()=>void;onClose:()=>void}){return <div className="backdrop try-backdrop" onMouseDown={onClose}><div className="try-studio" onMouseDown={e=>e.stopPropagation()}><button className="close" onClick={onClose}><X size={19}/></button><div className="try-preview" style={{backgroundImage:`linear-gradient(90deg,rgba(19,20,24,.08),rgba(19,20,24,.2)),url(${photo||product.image})`}}><div className="try-model"><div className="model-head"></div><div className="model-body"></div></div><span className="preview-label"><Sparkles size={13}/> Preview · {product.name} {onChangePhoto&&<button onClick={onChangePhoto} style={{marginLeft:8,color:'var(--accent)',fontWeight:600,cursor:'pointer'}}>Change Photo</button>}</span></div><div className="try-panel"><p className="eyebrow">TRY-ON STUDIO</p><h2>Your look, reimagined.</h2><div className="try-product"><img src={product.image} alt={product.name}/><div><h3>{product.name}</h3><p>{product.category} · ₹{product.price.toLocaleString('en-IN')}</p></div></div><div className="try-history-head"><span>Recently tried</span><b>{history.findIndex(x=>x.id===product.id)+1 || 1}/{history.length}</b></div><div className="try-history">{history.map(item=><button key={item.id} className={item.id===product.id?'active':''} onClick={()=>onSelect(item)}><img src={item.image} alt={item.name}/><span>{item.name}</span></button>)}</div><div className="try-actions"><button className="motion" onClick={onChangePhoto}><ImagePlus size={14}/> {photo?'Change photo':'Upload photo'}</button><button className="add-bag">Add to bag <ShoppingBag size={14}/></button></div><small>Try-on preview · Compare your recent looks before choosing.</small></div></div></div>}
