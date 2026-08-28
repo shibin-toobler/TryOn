@@ -1,3 +1,10 @@
+import * as dns from 'dns';
+
+// Force Node to prefer IPv4 over IPv6 for DNS resolution.
+// This prevents intermittent "Connection error" when talking to external APIs like OpenAI
+// from environments where IPv6 routing is flaky (a common issue in Node 18+ undici fetch).
+dns.setDefaultResultOrder('ipv4first');
+
 import { createApp } from './app';
 import { env, assertEnv } from './config/env';
 import { connectDatabase, disconnectDatabase } from './config/database';

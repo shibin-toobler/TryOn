@@ -33,7 +33,7 @@ export class OpenAIProvider implements TryOnProvider {
     this.client = new OpenAI({
       apiKey: env.ai.openaiApiKey,
       timeout: env.ai.timeoutMs,
-      maxRetries: 1,
+      maxRetries: 3,
     });
   }
 
