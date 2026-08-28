@@ -303,10 +303,21 @@ export class TryOnWidget {
   // ── rendering ───────────────────────────────────────────────────────────
 
   /** Opens the zoomable full view. Re-opening replaces whatever was showing. */
-  private openViewer(url: string, alt: string, caption: string): void {
+  private openViewer(): void {
     if (!this.shadow) return;
     this.closeViewer();
-    this.viewer = createViewer(url, alt, caption, () => this.closeViewer());
+    this.viewer = createViewer(this.store.get(), {
+      onClose: () => this.closeViewer(),
+      onSelectLook: (look) => {
+        this.store.set({ current: look, stage: look ? 'ready' : 'idle', error: null });
+      },
+      getProduct: (sku) => this.productCache.get(sku) ?? null,
+      onChangePhoto: (file) => void this.upload(file),
+      onAddToBag: (look) => {
+        // Mock add to cart logic (just close the modal for now)
+        this.closeViewer();
+      }
+    });
     this.shadow.appendChild(this.viewer.element);
   }
 
@@ -320,6 +331,10 @@ export class TryOnWidget {
 
     const state = this.store.get();
     this.container.textContent = '';
+    
+    if (this.viewer) {
+      this.viewer.update(state);
+    }
 
     // Documented hook: merchants can reflow their layout around the open panel.
     document.documentElement.classList.toggle(
@@ -353,7 +368,7 @@ export class TryOnWidget {
             if (product) void this.generate(product, true);
           },
           onUpload: (file) => void this.upload(file),
-          onExpand: (url, alt, caption) => this.openViewer(url, alt, caption),
+          onExpand: () => this.openViewer(),
         }),
       );
     }

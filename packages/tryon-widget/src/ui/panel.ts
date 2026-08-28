@@ -10,7 +10,7 @@ export interface PanelHandlers {
   onRetry(): void;
   onUpload(file: File): void;
   /** Opens the full-size zoomable view of whatever is currently on the stage. */
-  onExpand(url: string, alt: string, caption: string): void;
+  onExpand(): void;
 }
 
 /**
@@ -69,7 +69,7 @@ export function renderPanel(state: WidgetState, handlers: PanelHandlers): HTMLEl
   const expand = (): void => {
     const image = node.querySelector<HTMLImageElement>('.model-preview > img');
     if (!image || stage === 'generating') return;
-    handlers.onExpand(image.src, image.alt, current?.product?.name ?? 'Your photo');
+    handlers.onExpand();
   };
   on(node, '.preview-expand', 'click', expand);
   on(node, '.model-preview > img', 'click', expand);
@@ -89,6 +89,76 @@ export function renderPanel(state: WidgetState, handlers: PanelHandlers): HTMLEl
     node.querySelectorAll<HTMLElement>('.shot').forEach((shot) => {
       shot.setAttribute('aria-disabled', 'true');
     });
+  }
+
+  // --- Drag and Drop Logic ---
+  const topBar = node.querySelector<HTMLElement>('.panel-top');
+  if (topBar) {
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    // Default cursor for the header is grab
+    topBar.style.cursor = 'grab';
+    topBar.style.userSelect = 'none';
+
+    topBar.addEventListener('pointerdown', (e) => {
+      // Don't drag if they clicked the close button
+      if ((e.target as HTMLElement).closest('.panel-close')) return;
+      
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = node.getBoundingClientRect();
+      startLeft = rect.left;
+      startTop = rect.top;
+      
+      // Detach from responsive right/bottom constraints to allow free movement
+      node.style.right = 'auto';
+      node.style.bottom = 'auto';
+      node.style.left = `${startLeft}px`;
+      node.style.top = `${startTop}px`;
+      node.style.maxHeight = 'none';
+      
+      // Disable CSS animation/transition during drag for immediate response
+      node.style.animation = 'none';
+      node.style.transition = 'none';
+      
+      // Change cursor to grabbing while dragging
+      topBar.style.cursor = 'grabbing';
+      topBar.setPointerCapture(e.pointerId);
+    });
+
+    topBar.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      
+      let newLeft = startLeft + dx;
+      let newTop = startTop + dy;
+      
+      // Constrain panel so it cannot be dragged completely off-screen
+      newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - 40));
+      newTop = Math.max(0, Math.min(newTop, window.innerHeight - 40));
+      
+      node.style.left = `${newLeft}px`;
+      node.style.top = `${newTop}px`;
+    });
+
+    const endDrag = (e: PointerEvent) => {
+      if (!isDragging) return;
+      isDragging = false;
+      // Revert cursor back to grab
+      topBar.style.cursor = 'grab';
+      topBar.releasePointerCapture(e.pointerId);
+    };
+
+    topBar.addEventListener('pointerup', endDrag);
+    topBar.addEventListener('pointercancel', endDrag);
   }
 
   void pendingProduct;

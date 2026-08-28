@@ -291,63 +291,190 @@ h2, h3, h4, p { margin: 0; }
 
 /* ── Full-size viewer ─────────────────────────────────────────────────────
    Above the panel, since it is opened from inside it. */
-.viewer { position: fixed; inset: 0; z-index: 2147483100; background: rgba(0,0,0,.92); }
 
-/* The stage owns the whole overlay so the image is centred in the viewport, not
-   in the space left over above the toolbar. touch-action:none is what lets the
-   pinch handler see both pointers instead of the browser eating them. */
-.viewer-stage { position: absolute; inset: 0; overflow: hidden; touch-action: none; cursor: zoom-in; }
-.viewer-stage.grab { cursor: grab; }
-.viewer-stage.grab:active { cursor: grabbing; }
-
-/* Sized in natural pixels and moved by transform — transform does not reflow,
-   so panning and pinching stay smooth on a phone.
- *
- * Absolutely positioned and centred by negative margins rather than by grid or
- * flex centring, and the reason is not cosmetic. Layout centring measures the
- * element at its NATURAL size, because transforms are applied after layout. A
- * 1536px-tall render therefore sizes a 1536px track inside a 700px viewport and
- * gets centred within the track, so the scaled-down image lands hundreds of
- * pixels down the page and hangs off the bottom. Taking it out of flow means
- * layout has no size to react to, and transform-origin:center keeps the box
- * centre pinned to the stage centre at every scale. */
-.viewer-stage img {
-  position: absolute; left: 50%; top: 50%;
-  display: block; transform-origin: center center;
-  user-select: none; -webkit-user-drag: none;
-  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+/* MODAL OVERLAY — dark backdrop with centered modal */
+.viewer {
+  position: fixed; inset: 0; z-index: 2147483100;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex; justify-content: center; align-items: center;
+  padding: 40px; box-sizing: border-box;
 }
 
-.viewer-bar {
-  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 6px;
-  padding: 7px 9px; border-radius: 999px;
-  background: rgba(20,20,20,.82); border: 1px solid rgba(255,255,255,.14);
-  backdrop-filter: blur(8px);
-  color: #fff; font-size: 13px; max-width: calc(100vw - 32px);
+/* MODAL CONTAINER — large centered card, auto-sizing width */
+.viewer-layout {
+  display: flex; width: max-content; max-width: 95vw;
+  height: 100%; max-height: 85vh;
+  background: #fff; border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
 }
-.viewer-cap {
-  max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  padding: 0 8px 0 6px; color: rgba(255,255,255,.8); font-size: 12.5px;
+
+/* LEFT — preview image (matches 2:3 aspect ratio of generated images) */
+.viewer-main {
+  height: 100%; aspect-ratio: 2 / 3;
+  position: relative; overflow: hidden;
+  background: #f0eeea;
 }
-.viewer-bar button, .viewer-bar .viewer-dl {
-  min-width: 32px; height: 32px; padding: 0 9px;
+
+/* RIGHT — sidebar */
+.viewer-sidebar {
+  width: 380px; flex-shrink: 0;
+  background: #fff;
+  display: flex; flex-direction: column;
+  border-left: 1px solid #eee;
+  overflow-y: auto;
+}
+
+/* -- Sidebar header ---------------------------------------------------- */
+.viewer-sidebar-header {
+  position: relative; padding: 48px 40px 28px;
+}
+.viewer-sidebar-header .viewer-x {
+  position: absolute; right: 20px; top: 20px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: transparent; border: 1px solid #ddd;
   display: grid; place-items: center;
-  border: 0; border-radius: 999px; background: transparent;
-  color: #fff; font-size: 16px; line-height: 1; text-decoration: none; cursor: pointer;
+  color: var(--tryon-ink); cursor: pointer;
+  transition: background 0.15s;
 }
-.viewer-bar button:hover:not(:disabled), .viewer-bar .viewer-dl:hover { background: rgba(255,255,255,.16); }
-.viewer-bar button:disabled { opacity: .35; cursor: default; }
-.viewer-bar button:focus-visible, .viewer-bar .viewer-dl:focus-visible { outline: 2px solid #fff; outline-offset: -2px; }
-.viewer-pct { font-size: 12.5px; min-width: 52px; font-variant-numeric: tabular-nums; }
-.viewer-fit { font-size: 12.5px; }
-.viewer-x { font-size: 22px; }
+.viewer-sidebar-header .viewer-x:hover { background: #f5f5f5; }
+.viewer-sidebar-header .eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.15em;
+  text-transform: uppercase; color: #888; margin-bottom: 12px;
+}
+.viewer-sidebar-header h3 {
+  font-family: var(--tryon-serif); font-size: 32px;
+  font-weight: 400; line-height: 1.15; margin: 0; color: var(--tryon-ink);
+}
+
+/* -- Product card ------------------------------------------------------ */
+.viewer-product {
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 40px 28px;
+}
+.viewer-product .product-thumb {
+  width: 48px; height: 64px; border-radius: 6px;
+  overflow: hidden; flex-shrink: 0;
+  border: 1px solid #eee;
+}
+.viewer-product .product-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.viewer-product .product-info { flex: 1; min-width: 0; }
+.viewer-product .product-name {
+  font-size: 14px; font-weight: 600; margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.viewer-product .product-meta {
+  font-size: 12px; color: #888;
+}
+
+/* -- Divider ----------------------------------------------------------- */
+.viewer-divider { border: 0; border-top: 1px solid #eee; margin: 0 40px; }
+
+/* -- Recently tried ---------------------------------------------------- */
+.viewer-history {
+  display: flex; flex-direction: column; padding: 28px 0 0;
+}
+.history-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 40px 14px;
+  font-size: 11px; font-weight: 500; color: #888;
+}
+.viewer-history-list {
+  display: flex; gap: 12px; padding: 0 40px 28px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.viewer-history-list::-webkit-scrollbar { display: none; }
+
+.viewer-sidebar .shot {
+  flex: 0 0 72px; height: auto; border-radius: 6px;
+  border: 1px solid #eee; background: #fff;
+  overflow: hidden; display: flex; flex-direction: column;
+  cursor: pointer; transition: border-color 0.15s; padding: 0;
+}
+.viewer-sidebar .shot img {
+  width: 100%; height: 80px; object-fit: cover; display: block;
+}
+.viewer-sidebar .shot span {
+  font-size: 9px; padding: 5px 6px; line-height: 1.2;
+  text-align: left; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  color: #888;
+}
+.viewer-sidebar .shot:hover { border-color: #aaa; }
+.viewer-sidebar .shot.on {
+  border-color: var(--tryon-ink);
+  box-shadow: 0 0 0 1px var(--tryon-ink);
+}
+.viewer-sidebar .shot.on span { color: var(--tryon-ink); font-weight: 600; }
+
+/* -- Footer actions ---------------------------------------------------- */
+.viewer-footer {
+  padding: 20px 40px 36px; margin-top: auto;
+}
+.viewer-actions {
+  display: flex; gap: 12px; margin-bottom: 16px;
+}
+.viewer-actions .secondary {
+  flex: 1; height: 48px; font-size: 13px; font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 99px; border: 1px solid #ddd; background: #fff;
+  color: var(--tryon-ink); cursor: pointer; transition: background 0.15s;
+}
+.viewer-actions .secondary:hover { background: #f8f8f8; }
+.viewer-actions .primary {
+  flex: 1; height: 48px; font-size: 13px; font-weight: 500;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 99px; border: none; background: #1a1a1a; color: #fff;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.viewer-actions .primary:hover { opacity: 0.88; }
+.viewer-note {
+  font-size: 11px; color: #aaa; text-align: center; margin: 0;
+}
+
+/* -- Floating pill on the image ---------------------------------------- */
+.viewer-pill {
+  position: absolute; left: 20px; bottom: 20px; z-index: 10;
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 10px 16px; background: rgba(255,255,255,0.95);
+  border-radius: 6px; font-size: 12px; font-weight: 500;
+  color: var(--tryon-ink);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+}
+.viewer-pill .pill-sparkle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; background: #f0f0f0; border-radius: 50%;
+}
+.pill-action {
+  margin-left: 6px; color: #4361ee; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+  font-size: 12px;
+}
+.viewer-file-input, .viewer-file-input-btn { display: none; }
+
+/* -- Responsive -------------------------------------------------------- */
+@media (max-width: 900px) {
+  .viewer-layout {
+    flex-direction: column;
+  }
+  .viewer-main { flex: 0 0 50%; min-height: 260px; }
+  .viewer-sidebar {
+    flex: 1 1 auto; width: 100%;
+    border-left: none; border-top: 1px solid #eee;
+  }
+  .viewer-pill { left: 12px; bottom: 12px; }
+}
+
+/* -- Image ------------------------------------------------------------- */
+.viewer-image {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
 
 @media (max-width: 640px) {
-  /* The caption is the first thing worth losing when the bar runs out of room. */
   .viewer-cap { display: none; }
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   *, *::after { animation: none !important; transition: none !important; }
