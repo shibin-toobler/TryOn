@@ -27,4 +27,6 @@ export const icons = {
   minus: (size = 18) => svg('<path d="M5 12h14"/>', size),
   expand: (size = 15) =>
     svg('<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>', size),
+  bag: (size = 14) =>
+    svg('<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>', size),
 };
