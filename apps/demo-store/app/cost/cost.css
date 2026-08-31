@@ -1,0 +1,150 @@
+.cost-page {
+  min-height: 100vh;
+  background-color: #0d0f12;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 4rem 2rem;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(162, 107, 252, 0.1), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(53, 162, 235, 0.1), transparent 25%);
+}
+
+.cost-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.cost-header {
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.cost-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(90deg, #fff, #a26bfc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cost-header p {
+  color: #8b92a5;
+  font-size: 1.1rem;
+}
+
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.cost-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.cost-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(162, 107, 252, 0.3);
+}
+
+.cost-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #8b92a5;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.cost-card-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.cost-card-sub {
+  font-size: 0.85rem;
+  color: #10b981;
+  margin-top: 0.5rem;
+}
+
+.cost-section {
+  margin-bottom: 3rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.cost-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cost-table-wrapper {
+  overflow-x: auto;
+}
+
+.cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.cost-table th {
+  padding: 1rem;
+  color: #8b92a5;
+  font-weight: 500;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cost-table td {
+  padding: 1rem;
+  color: #d1d5db;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.cost-table tr:last-child td {
+  border-bottom: none;
+}
+
+.cost-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.cost-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(162, 107, 252, 0.1);
+  color: #a26bfc;
+}
+
+.cost-error {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  color: #f87171;
+}

@@ -17,6 +17,8 @@ const EXT_BY_MIME: Record<string, string> = {
 };
 const extOf = (mime: string): string => EXT_BY_MIME[mime] ?? 'jpg';
 
+import fetch from 'node-fetch';
+
 /**
  * Real try-on generation through OpenAI's image edit endpoint. Both the person
  * photo and the garment photo go in as reference images; the model returns a
@@ -34,6 +36,7 @@ export class OpenAIProvider implements TryOnProvider {
       apiKey: env.ai.openaiApiKey,
       timeout: env.ai.timeoutMs,
       maxRetries: 3,
+      fetch: fetch as any,
     });
   }
 
